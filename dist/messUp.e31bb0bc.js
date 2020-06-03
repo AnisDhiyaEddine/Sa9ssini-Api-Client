@@ -2611,48 +2611,147 @@ try {
   Function("r", "regeneratorRuntime = r")(runtime);
 }
 
-},{}],"index.js":[function(require,module,exports) {
+},{}],"user.js":[function(require,module,exports) {
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
-var axios = require('axios');
+var axios = require("axios");
 
-var regeneratorRuntime = require("regenerator-runtime");
+var url = "http://localhost:3000";
 
-var url = 'http://localhost:3000';
-console.log("up and runing");
-var user = {
-  userName: "Test UserName",
-  email: "test@gmail.com",
-  password: "testHashed"
-};
-
-var main = /*#__PURE__*/function () {
-  var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+var signup = /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(user) {
+    var response;
     return regeneratorRuntime.wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            try {} catch (error) {
-              console.log(error);
-            }
+            _context.prev = 0;
+            _context.next = 3;
+            return axios.post(url + "/users", user);
 
-          case 1:
+          case 3:
+            response = _context.sent;
+            window.localStorage.setItem("sa9ssini_access_token", response.data.token);
+            return _context.abrupt("return", response);
+
+          case 8:
+            _context.prev = 8;
+            _context.t0 = _context["catch"](0);
+            console.log(_context.t0);
+
+          case 11:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee);
+    }, _callee, null, [[0, 8]]);
   }));
 
-  return function main() {
+  return function signup(_x) {
     return _ref.apply(this, arguments);
   };
 }();
 
-main();
-},{"axios":"node_modules/axios/index.js","regenerator-runtime":"node_modules/regenerator-runtime/runtime.js"}],"node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+var login = /*#__PURE__*/function () {
+  var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(_ref2) {
+    var email, password, response;
+    return regeneratorRuntime.wrap(function _callee2$(_context2) {
+      while (1) {
+        switch (_context2.prev = _context2.next) {
+          case 0:
+            email = _ref2.email, password = _ref2.password;
+            _context2.prev = 1;
+            _context2.next = 4;
+            return axios.post(url + "/users/login", {
+              email: email,
+              password: password
+            });
+
+          case 4:
+            response = _context2.sent;
+            window.localStorage.setItem("sa9ssini_access_token", response.data.token);
+            return _context2.abrupt("return", response);
+
+          case 9:
+            _context2.prev = 9;
+            _context2.t0 = _context2["catch"](1);
+            console.log(_context2.t0);
+
+          case 12:
+          case "end":
+            return _context2.stop();
+        }
+      }
+    }, _callee2, null, [[1, 9]]);
+  }));
+
+  return function login(_x2) {
+    return _ref3.apply(this, arguments);
+  };
+}();
+
+var logout = /*#__PURE__*/function () {
+  var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3() {
+    var headers, response;
+    return regeneratorRuntime.wrap(function _callee3$(_context3) {
+      while (1) {
+        switch (_context3.prev = _context3.next) {
+          case 0:
+            _context3.prev = 0;
+
+            if (window.localStorage.getItem("sa9ssini_access_token")) {
+              headers = {
+                Authorization: "Bearer ".concat(window.localStorage.getItem("sa9ssini_access_token"))
+              };
+            }
+
+            _context3.next = 4;
+            return axios.post(url + "/auth/logout", {
+              headers: headers
+            });
+
+          case 4:
+            response = _context3.sent;
+            console.log(response);
+            return _context3.abrupt("return", response);
+
+          case 9:
+            _context3.prev = 9;
+            _context3.t0 = _context3["catch"](0);
+            console.log(_context3.t0);
+
+          case 12:
+          case "end":
+            return _context3.stop();
+        }
+      }
+    }, _callee3, null, [[0, 9]]);
+  }));
+
+  return function logout() {
+    return _ref4.apply(this, arguments);
+  };
+}();
+
+module.exports = {
+  signup: signup,
+  login: login,
+  logout: logout
+};
+},{"axios":"node_modules/axios/index.js"}],"index.js":[function(require,module,exports) {
+var axios = require('axios');
+
+var regeneratorRuntime = require("regenerator-runtime");
+
+var _require = require('./user'),
+    signup = _require.signup,
+    login = _require.login,
+    logout = _require.logout;
+
+logout();
+},{"axios":"node_modules/axios/index.js","regenerator-runtime":"node_modules/regenerator-runtime/runtime.js","./user":"user.js"}],"node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -2680,7 +2779,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "37547" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "42027" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

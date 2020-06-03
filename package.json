@@ -3,9 +3,10 @@
     "axios": "^0.19.2",
     "hel": "^2.0.1",
     "parcel": "^1.12.4",
-    "regenerator-runtime": "^0.13.5"
+    "regenerator-runtime": "^0.13.5",
+    "socket.io-client": "^2.3.0"
   },
-  "name": "messUp",
+  "name": "client",
   "version": "1.0.0",
   "main": "index.js",
   "devDependencies": {},
