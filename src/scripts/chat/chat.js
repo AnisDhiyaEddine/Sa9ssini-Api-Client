@@ -1,9 +1,6 @@
 const io = require("socket.io-client");
 const socket = io.connect("http://localhost:8080");
-
-socket.on("connect", () => {
-  console.log("Socket.io server Successfully connected!");
-});
+const getOwnProfile = require("../user/getOwnProfile");
 ///////////////////////////////////////////////////////////////////
 
 //View Unit
@@ -50,10 +47,11 @@ const UIController = () => {
   };
 
   //Get UserName and room name
-  const { username, room } = Qs.parse(location.search, {
+  const { room,username } = Qs.parse(location.search, {
     ignoreQueryPrefix: true,
   });
-
+ 
+  
   return {
     DOMStrings,
     Templates,
