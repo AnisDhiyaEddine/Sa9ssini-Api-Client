@@ -69,7 +69,7 @@ const UIController = () => {
     DOMStrings.history.insertAdjacentHTML("beforeend", html);
   };
 
-  //Get the id of to_user
+  //Get the name of the to_user
   const { to_user } = Qs.parse(location.search, {
     ignoreQueryPrefix: true,
   });
@@ -92,23 +92,42 @@ const APPController = async () => {
   const UICtrl = UIController();
   const ModelCtrl = ModelController();
 
-  //Displaying history
-  const userName = await ModelCtrl.loadHistory(
-    UICtrl.Templates.historyTemplate
+  //handling the discussion
+  let {
+    userName,
+    room,
+    chat,
+    from_user,
+    to_user,
+    active,
+  } = await ModelCtrl.handlingDiscussion(
+    UICtrl.Templates.historyTemplate,
+    UICtrl.to_user
   );
+
+  console.log({
+    userName,
+    room,
+    chat,
+    from_user,
+    to_user,
+    active,
+  });
+
+  //when the user is not active .. 2 solutions .. 1- emit the event to a unique room no one is connected to
+  //.. 2- use if else statements ..
+  //we will go with the first solution we just store messages ..!
   //listen for incoming messages
   ModelCtrl.listenIncMsg(UICtrl.Templates.messageRecievedTemplate);
 
   //listen for incoming location share
   ModelCtrl.listenLocation(UICtrl.Templates.locationRecievedTemplate);
 
-  let stat = await ModelCtrl.getActivity(UICtrl.to_user);
-  if (stat) {
-    console.log(stat);
-  }
-  UICtrl.DOMStrings.messageForm.addEventListener("submit", (e) => {
+  UICtrl.DOMStrings.messageForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    ModelCtrl.sendMsg(
+    await ModelCtrl.sendMsg(
+      from_user._id,
+      to_user._id,
       UICtrl.getMsgInput(),
       UICtrl.Templates.messageSentTemplate
     );
@@ -121,12 +140,13 @@ const APPController = async () => {
   });
 
   //Join a chat room
-  ModelCtrl.join({ username: userName, room: UICtrl.room });
-};
+  ModelCtrl.join({ username: userName, room });
+};  
 
 const ModelController = () => {
   //Basic usage of UICtrl
   const UICtrl = UIController();
+  //////////////////////////////////////////////////////////////////////////////
 
   const {
     getActiveUsers,
@@ -134,6 +154,7 @@ const ModelController = () => {
     getMessages,
     sendMessage,
     startChat,
+    handleChat,
   } = require("./offlineChatUtils");
 
   const getOwnProfile = require("../user/getOwnProfile");
@@ -145,31 +166,15 @@ const ModelController = () => {
     const user_02 = await getOtherProfile(chat.user_02);
     return userName == user_01.userName ? user_02 : user_01;
   };
+  //////////////////////////////////////////////////////////////////////////////
 
-  const loadHistory = async (template) => {
-    try {
-      const chats = await getChats();
-      let { user, userName } = await getOwnProfile();
-      let html;
-      if (user) {
-        chats.forEach(async (chat) => {
-          let other = await getOther(chat, userName);
-          let messages = await getMessages(chat._id, user._id);
-          let lastMessage = messages[messages.length - 1];
-          html = Mustache.render(template, {
-            message: lastMessage.message,
-            status: lastMessage.status,
-            otherName: other.userName,
-            at: moment(lastMessage.createdAt).format("h:mm a"),
-          });
-          UICtrl.displayHistory(html);
-        });
-        return userName;
+  const join = async ({ username, room }) => {
+    socket.emit("join", { username, room }, (error) => {
+      if (error) {
+        alert(error);
+        location.href = "/";
       }
-      return;
-    } catch (error) {
-      console.log(error);
-    }
+    });
   };
 
   const listenIncMsg = (template) => {
@@ -185,7 +190,19 @@ const ModelController = () => {
     });
   };
 
-  const sendMsg = (input, template) => {
+  const listenLocation = (template) => {
+    socket.on("locationMessage", (message) => {
+      const html = Mustache.render(template, {
+        username: message.username,
+        url: message.url,
+        createdAt: moment(message.createdAt).format("h:mm a"),
+      });
+      UICtrl.displayMsg(html);
+    });
+  };
+
+  const sendMsg = async (from_user, to_user, input, template) => {
+    await sendMessage(input, from_user, to_user);
     socket.emit("sendMessage", input, () => {
       const html = Mustache.render(template, {
         message: input,
@@ -197,6 +214,7 @@ const ModelController = () => {
     });
   };
 
+  // i won't save user location in the database .. ce n'est pas pratique!
   const shareLocation = (template) => {
     if (!navigator.geolocation) {
       return alert("Geolocation is not supported by your browser.");
@@ -219,26 +237,14 @@ const ModelController = () => {
     });
   };
 
-  const listenLocation = (template) => {
-    socket.on("locationMessage", (message) => {
-      const html = Mustache.render(template, {
-        username: message.username,
-        url: message.url,
-        createdAt: moment(message.createdAt).format("h:mm a"),
-      });
-      UICtrl.displayMsg(html);
-    });
-  };
-
   const getActivity = async (to_user) => {
     try {
-      const { userName } = await getOtherProfileByName(to_user);
+      const toUser = await getOtherProfileByName(to_user);
       let { users } = await getActiveUsers();
       if (users) {
-        let active = users.find((user) => user.username == userName);
+        let active = users.find((user) => user.username == toUser.userName);
         if (active) {
-          console.log("chir hada y7ab chorba w rah enligne");
-          return {active:true}
+          return { active: true, user: toUser };
         }
       } else {
         return { active: false };
@@ -248,13 +254,63 @@ const ModelController = () => {
     }
   };
 
-  const join = async ({ username, room }) => {
-    socket.emit("join", { username, room }, (error) => {
-      if (error) {
-        alert(error);
-        location.href = "/";
+  const loadHistory = async (template) => {
+    try {
+      const chats = await getChats();
+      let { user, userName } = await getOwnProfile();
+      let html;
+      if (user) {
+        chats.forEach(async (chat) => {
+          let other = await getOther(chat, userName);
+          let messages = await getMessages(chat._id, user._id);
+          let lastMessage = messages[messages.length - 1];
+          html = Mustache.render(template, {
+            message: lastMessage.message,
+            status: lastMessage.status,
+            otherName: other.userName,
+            at: moment(lastMessage.createdAt).format("h:mm a"),
+          });
+          UICtrl.displayHistory(html);
+        });
+        return { user, userName };
       }
-    });
+      return;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handlingDiscussion = async (template, to_userName) => {
+    try {
+      let loadRes = await loadHistory(template);
+      let userName = loadRes.userName;
+      let from_user = loadRes.user;
+
+      let statusRes = await getActivity(to_userName);
+      let active, to_user;
+      if (statusRes) {
+        active = statusRes.active;
+        to_user = statusRes.user;
+      }
+      let room, chat;
+      if (active) {
+        chat = await handleChat(from_user._id, to_user._id);
+        room = chat._id;
+      }
+      if (!room) {
+        room = from_user._id;
+      }
+      return {
+        userName,
+        room,
+        chat,
+        from_user,
+        to_user,
+        active,
+      };
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return {
@@ -263,8 +319,7 @@ const ModelController = () => {
     shareLocation,
     listenLocation,
     join,
-    loadHistory,
-    getActivity,
+    handlingDiscussion,
   };
 };
 

@@ -62,7 +62,6 @@ const startChat = async (user_01, user_02) => {
 
 const handleChat = async (from_user, to_user) => {
   const chats = await getChats();
-  console.log(chats);
   let chat;
   if (chats.length > 0) {
     let started = false;
@@ -84,6 +83,7 @@ const handleChat = async (from_user, to_user) => {
 };
 
 const sendMessage = async (message, from_user, to_user) => {
+
   const chat = await handleChat(from_user, to_user);
   const { data } = await post({
     url: `/chats/${chat._id}/messages`,
@@ -97,10 +97,13 @@ const sendMessage = async (message, from_user, to_user) => {
   return { message: data, chat };
 };
 
+
+
 module.exports = {
   getActiveUsers,
   getChats,
   getMessages,
   sendMessage,
   startChat,
+  handleChat,
 };
