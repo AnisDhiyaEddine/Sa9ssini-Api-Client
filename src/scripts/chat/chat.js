@@ -104,7 +104,6 @@ const APPController = async () => {
     UICtrl.Templates.historyTemplate,
     UICtrl.to_user
   );
-
   console.log({
     userName,
     room,
@@ -113,7 +112,6 @@ const APPController = async () => {
     to_user,
     active,
   });
-
   //when the user is not active .. 2 solutions .. 1- emit the event to a unique room no one is connected to
   //.. 2- use if else statements ..
   //we will go with the first solution we just store messages ..!
@@ -125,12 +123,13 @@ const APPController = async () => {
 
   UICtrl.DOMStrings.messageForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    await ModelCtrl.sendMsg(
-      from_user._id,
-      to_user._id,
-      UICtrl.getMsgInput(),
-      UICtrl.Templates.messageSentTemplate
-    );
+      await ModelCtrl.sendMsg(
+        from_user._id,
+        to_user._id,
+        UICtrl.getMsgInput(),
+        UICtrl.Templates.messageSentTemplate
+      );
+    
   });
 
   //share location
@@ -141,7 +140,7 @@ const APPController = async () => {
 
   //Join a chat room
   ModelCtrl.join({ username: userName, room });
-};  
+};
 
 const ModelController = () => {
   //Basic usage of UICtrl
@@ -246,9 +245,9 @@ const ModelController = () => {
         if (active) {
           return { active: true, user: toUser };
         }
-      } else {
-        return { active: false };
       }
+      console.log(toUser);
+      return { active: false, user: toUser };
     } catch (error) {
       console.log(error);
     }
