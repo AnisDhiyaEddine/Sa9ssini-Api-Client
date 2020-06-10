@@ -34,5 +34,24 @@ const {
   updateQuestion,
   addQuestionTag,
   deleteQuestion,
+  addAnswer,
+  getBestAnswer,
+  getQuestionAnswers,
+  addAnswerTag,
+  rateAnswer,
 } = require("./src/scripts/QA/QAUtils");
 
+/*
+addAnswer("5ee087da0a52fb19e16e4f0e", "this is an answer").then((data) =>
+  console.log(data)
+);
+getBestAnswer("5ee087da0a52fb19e16e4f0e").then((data) =>
+  console.log(data)
+);
+
+addAnswerTag("#Nodejs", "5ee0fe4acf8f12467f909a23").then((data) =>
+  console.log(data)
+);
+*/
+
+rateAnswer("5ee0fe4acf8f12467f909a23", 5).then((data) => console.log(data));

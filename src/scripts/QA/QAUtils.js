@@ -76,6 +76,71 @@ const deleteQuestion = async (questionID) => {
     console.log(error);
   }
 };
+
+const addAnswer = async (questionID, answer) => {
+  try {
+    const { data } = await patch({
+      url: `/questions/${questionID}/addAnswer`,
+      data: {
+        answer,
+      },
+    });
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const getBestAnswer = async (questionID) => {
+  try {
+    const { data } = await get({
+      url: `/answers/${questionID}/bestAnswer`,
+    });
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const getQuestionAnswers = async (questionID) => {
+  try {
+    const { data } = await get({
+      url: `answers/${questionID}`,
+    });
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const addAnswerTag = async (tag, answerID) => {
+  try {
+    const { data } = await patch({
+      url: `/answers/me/${answerID}/addTag`,
+      data: {
+        tag,
+      },
+    });
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const rateAnswer = async (answerID, rate) => {
+  try {
+    const { data } = await patch({
+      url: `/answers/${answerID}/rate`,
+      data: {
+        rate,
+      },
+    });
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 module.exports = {
   postQuestion,
   getOwnQuestions,
@@ -83,4 +148,9 @@ module.exports = {
   updateQuestion,
   addQuestionTag,
   deleteQuestion,
+  addAnswer,
+  getBestAnswer,
+  getQuestionAnswers,
+  addAnswerTag,
+  rateAnswer
 };
