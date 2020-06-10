@@ -26,3 +26,13 @@ const {
   sendMessage,
   startChat,
 } = require("./src/scripts/chat/offlineChatUtils");
+
+const {
+  postQuestion,
+  getOwnQuestions,
+  getQuestionById,
+  updateQuestion,
+  addQuestionTag,
+  deleteQuestion,
+} = require("./src/scripts/QA/QAUtils");
+
