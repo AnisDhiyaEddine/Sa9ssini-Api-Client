@@ -127,13 +127,10 @@ const addAnswerTag = async (tag, answerID) => {
   }
 };
 
-const rateAnswer = async (answerID, rate) => {
+const voteAnswer = async (answerID) => {
   try {
     const { data } = await patch({
-      url: `/answers/${answerID}/rate`,
-      data: {
-        rate,
-      },
+      url: `/answers/${answerID}/vote`,
     });
     return data;
   } catch (error) {
@@ -152,5 +149,5 @@ module.exports = {
   getBestAnswer,
   getQuestionAnswers,
   addAnswerTag,
-  rateAnswer
+  voteAnswer,
 };
